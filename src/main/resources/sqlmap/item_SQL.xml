@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace : 매퍼xml 파일이 여러개 일 수 있음 
+	이를 구별하기 위한 식별 용도로 사용
+-->
+
+<mapper namespace="kr.or.ddit.mapper.ItemMapper">
+	<!-- 아이템 등록
+	 - itemVO : ItemVO(itemId=0, itemName=에어팟, price=300, description=<p>ㅇㄹ</p>
+			, pictureUrl=/2023/08/10/asdsfea_개똥이.jsp, pictures=org.springframework...
+	-->
+	<insert id="itemRegist" parameterType="itemVO">
+	<selectKey resultType="int" order="BEFORE" keyProperty="itemId">
+		SELECT NVL(MAX(ITEM_ID),0)+1 FROM ITEM
+	</selectKey>
+		INSERT INTO ITEM(ITEM_ID, ITEM_NAME, PRICE, DESCRIPTION, PICTURE_URL)
+		VALUES(#{itemId},#{itemName},#{price},#{description},#{pictureUrl})
+	</insert>
+	
+	<!-- 
+	처음item3VO[itemId=0,itemName=태블릿&price=12000&description=설명&pictures=파일객체들]
+	selectKey후item3VO[itemId=1,itemName=태블릿&price=12000&description=설명&pictures=파일객체들]
+	 -->
+	<insert id="registMultiPost" parameterType="item3VO">
+	<selectKey resultType="int" order="BEFORE" keyProperty="itemId">
+		SELECT NVL(MAX(ITEM_ID),0)+1 FROM ITEM3
+	</selectKey>
+		INSERT INTO ITEM3(ITEM_ID, ITEM_NAME, PRICE, DESCRIPTION)        
+		VALUES(#{itemId},#{itemName},#{price},#{description})
+	</insert>
+	
+	<!-- 파일 다중 입력 다중입력을 할때는 inster이지만 update를 사용한다. 
+	List<ItemAttachVO> itemAttachVOList
+	-->
+	<update id="registMultiAttach" parameterType="java.util.List">
+		<foreach collection="list" item="itemAttachVO"
+		open="INSERT ALL" close="SELECT * FROM DUAL" separator=" " index="idx">
+		INTO ITEM_ATTACH(FULLNAME, ITEM_ID, REGDATE)
+		VALUES(#{itemAttachVO.fullname},#{itemAttachVO.itemId},sysdate)
+		</foreach>
+	</update>
+</mapper>
